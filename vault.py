@@ -47,8 +47,8 @@ with tabs[1]:
     st.header("The Battlefield")
     tasks = supabase.table('tasks').select('*').order('priority', desc=True).execute()
     if tasks.data:
-        # Show as a searchable dataframe/table
-        st.dataframe(tasks.data, use_container_width=True, hide_index=True)
+        # 🟡 FIX: Updated 'use_container_width' to the 2026 'width=stretch' syntax
+        st.dataframe(tasks.data, width="stretch", hide_index=True)
     else:
         st.success("Battlefield clear. No pending tasks.")
 
@@ -65,8 +65,11 @@ with tabs[2]:
                 with col1:
                     st.markdown(f"### [{item['title']}]({item['url']})")
                     st.write(item['summary'] or "No summary available.")
-                    if item['strategic_note']:
+                    if item.get('strategic_note'):
                         st.info(f"💡 {item['strategic_note']}")
                 with col2:
-                    st.write(f"📂 {item.get('missions', {}).get('title', 'General')}")
+                    # 🔴 CRITICAL FIX: Handle resources that don't have a mission yet
+                    mission_data = item.get('missions') or {} 
+                    mission_title = mission_data.get('title', 'General')
+                    st.write(f"📂 {mission_title}")
                 st.divider()
