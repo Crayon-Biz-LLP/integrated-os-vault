@@ -68,8 +68,8 @@ with tabs[2]:
                     if item.get('strategic_note'):
                         st.info(f"💡 {item['strategic_note']}")
                 with col2:
-                    # 🔴 CRITICAL FIX: Handle resources that don't have a mission yet
-                    mission_data = item.get('missions') or {} 
+                    # 🛡️ Safety Check: If 'missions' is None, use an empty dict {}
+                    mission_data = item.get('missions') or {}
                     mission_title = mission_data.get('title', 'General')
                     st.write(f"📂 {mission_title}")
                 st.divider()
