@@ -33,14 +33,47 @@ tabs = st.tabs(["🚀 MISSIONS", "📋 BATTLEFIELD (TASKS)", "📚 RESOURCE VAUL
 # --- TAB 1: MISSIONS ---
 with tabs[0]:
     st.header("Active Strategic Missions")
-    missions = supabase.table('missions').select('*').eq('status', 'active').execute()
-    if missions.data:
-        for m in missions.data:
-            with st.expander(f"🎯 {m['title']}", expanded=True):
-                st.write(f"**Status:** {m['status'].upper()}")
-                st.caption(f"Created: {m['created_at']}")
+    
+    # Fetch Missions with their descriptions
+    missions_res = supabase.table('missions').select('*').order('created_at', desc=True).execute()
+    
+    if missions_res.data:
+        for m in missions_res.data:
+            with st.expander(f"🎯 {m['title']}", expanded=False):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"**Status:** {m['status'].upper()}")
+                    # 🧠 The Logic: Displaying the AI's reasoning for creating this mission
+                    if m.get('description'):
+                        st.info(f"**Strategic Intent:** {m['description']}")
+                    else:
+                        st.write("_No strategic description provided._")
+                
+                with col2:
+                    st.caption(f"Created: {m['created_at'][:10]}")
+
+                st.divider()
+                
+                # 🔗 Fetch & List Resources belonging to THIS mission
+                res_items = supabase.table('resources')\
+                    .select('title, url, summary, strategic_note')\
+                    .eq('mission_id', m['id'])\
+                    .execute()
+
+                if res_items.data:
+                    st.write("### 🔖 Mission Components")
+                    for r in res_items.data:
+                        st.markdown(f"**[{r['title']}]({r['url']})**")
+                        if r['summary']:
+                            st.write(f"_{r['summary']}_")
+                        # 💡 The "Why": AI logic for why this link belongs here
+                        if r['strategic_note']:
+                            st.caption(f"💡 {r['strategic_note']}")
+                        st.write("")
+                else:
+                    st.write("No resources linked to this mission yet.")
     else:
-        st.info("No active missions. Let the AI define one in your next Pulse.")
+        st.info("No active missions found. Declare one in Telegram or let the AI detect a pattern.")
 
 # --- TAB 2: TASKS ---
 with tabs[1]:
